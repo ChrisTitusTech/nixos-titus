@@ -27,11 +27,11 @@ nix.settings = {
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos-studio"; # Define your hostname.
+  networking.hostName = "nixos"; # Define your hostname.
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
-  time.timeZone = "America/Chicago";
+  time.timeZone = "America/Toronto";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -63,7 +63,7 @@ services.xserver.displayManager.setupCommands = ''
   hardware.pulseaudio.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.titus = {
+  users.users.ultraforce = {
      isNormalUser = true;
      extraGroups = [ "wheel" "kvm" "input" "disk" "libvirtd" ]; # Enable ‘sudo’ for the user.
   };
@@ -159,7 +159,7 @@ services.xserver.displayManager.setupCommands = ''
 
   nixpkgs.overlays = [
 	(final: prev: {
-		dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
+		dwm = prev.dwm.overrideAttrs (old: { src = /home/ultraforce/dwm-titus ;});
 	})
   ];
   
