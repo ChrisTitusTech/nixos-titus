@@ -7,7 +7,7 @@
 {
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.permittedInsecurePackages = [
-                "openssl-1.1.1u"
+                "openssl-1.1.1v"
 		"python-2.7.18.6"
               ];
 hardware.opengl.driSupport32Bit = true;
