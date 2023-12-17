@@ -5,7 +5,14 @@
 { config, pkgs, ... }:
 
 {
+  documentation.nixos.enable = false; # .desktop
   nixpkgs.config.allowUnfree = true;
+  nix = {
+    settings = {
+      experimental-features = "nix-command flakes";
+      auto-optimise-store = true;
+    };
+  };
   nixpkgs.config.permittedInsecurePackages = [
                 "openssl-1.1.1v"
 		"python-2.7.18.6"
@@ -24,8 +31,18 @@ nix.settings = {
     ];
 
   # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+#  boot.loader.systemd-boot.enable = true;
+#  boot.loader.efi.canTouchEfiVariables = true;
+
+ boot = {
+    tmp.cleanOnBoot = true;
+    supportedFilesystems = [ "ntfs" ];
+    loader = {
+      timeout = 2;
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+  };
 
   networking.hostName = "nixos-studio"; # Define your hostname.
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -56,7 +73,7 @@ nix.settings = {
 services.xserver.displayManager.setupCommands = ''
     ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
 '';
-  
+
  services.picom.enable = true;
   # Enable sound.
   sound.enable = true;
@@ -65,7 +82,15 @@ services.xserver.displayManager.setupCommands = ''
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.titus = {
      isNormalUser = true;
-     extraGroups = [ "wheel" "kvm" "input" "disk" "libvirtd" ]; # Enable ‘sudo’ for the user.
+     isNormalUser = true;
+    description = "Coal-Coloured Judgement Crow";
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "audio"
+      "video"
+      "libvirtd"
+    ];
   };
 
   # List packages installed in system profile. To search, run:
@@ -115,6 +140,7 @@ services.xserver.displayManager.setupCommands = ''
 	nodejs
 	nomacs
 	openssl
+	nerdfonts
 	pavucontrol
 	picom
 	polkit_gnome
@@ -162,17 +188,17 @@ services.xserver.displayManager.setupCommands = ''
 		dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
 	})
   ];
-  
+
   ## Gaming
 	programs.steam = {
 	  enable = true;
 	  remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
 	  dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
 	};
-	  
+
 
   # List services that you want to enable:
-  virtualisation.libvirtd.enable = true; 
+  virtualisation.libvirtd.enable = true;
   # enable flatpak support
   services.flatpak.enable = true;
   services.dbus.enable = true;
@@ -200,7 +226,7 @@ services.xserver.displayManager.setupCommands = ''
    extraConfig = ''
      DefaultTimeoutStopSec=10s
    '';
-}; 
+};
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -209,8 +235,8 @@ services.xserver.displayManager.setupCommands = ''
   networking.firewall.enable = false;
   networking.enableIPv6 = false;
 
-fonts = {
-    fonts = with pkgs; [
+fonts = {                                                  #This is depricated new sytax will
+    fonts = with pkgs; [                                   #be enforced in the next realease
       noto-fonts
       noto-fonts-cjk
       noto-fonts-emoji
@@ -233,16 +259,16 @@ fonts = {
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
   system.copySystemConfiguration = true;
-  system.autoUpgrade.enable = true;  
-  system.autoUpgrade.allowReboot = true; 
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.05";
-  
+  system.autoUpgrade.enable = true;
+  system.autoUpgrade.allowReboot = true;
+  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.05";
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "22.11"; # Did you read the comment?
+  system.stateVersion = "23.11"; # Did you read the comment?
 
 }
