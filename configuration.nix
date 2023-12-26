@@ -83,13 +83,20 @@ services.xserver.displayManager.setupCommands = ''
   users.users.titus = {
      isNormalUser = true;
      isNormalUser = true;
-    description = "Coal-Coloured Judgement Crow";
-    extraGroups = [
+    description = "Titus";
+    extraGroups = [    
+      "flatpak"
+      "disk"
+      "qemu"
+      "kvm"
+      "libvirtd"
+      "sshd"
       "networkmanager"
       "wheel"
       "audio"
       "video"
       "libvirtd"
+      "root"
     ];
   };
 
