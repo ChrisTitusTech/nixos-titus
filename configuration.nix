@@ -100,16 +100,16 @@ services.xserver.displayManager.setupCommands = ''
 	wget
 	w3m
 	dmenu
-  neofetch
+        neofetch
 	neovim
 	autojump
 	starship
-	brave
+	floorp
 	bspwm
 	cargo
 	celluloid
 	chatterino2
-  clang-tools_9
+  	clang-tools_9
 	davinci-resolve
 	dwm
 	dunst
@@ -118,8 +118,8 @@ services.xserver.displayManager.setupCommands = ''
 	feh
 	flameshot
 	flatpak
-  fontconfig
-  freetype
+  	fontconfig
+  	freetype
 	gcc
 	gh
 	gimp
@@ -131,7 +131,7 @@ services.xserver.displayManager.setupCommands = ''
 	hugo
 	kitty
 	libverto
-  luarocks
+  	luarocks
 	lutris
 	mangohud
 	neovim
@@ -167,13 +167,13 @@ services.xserver.displayManager.setupCommands = ''
 	xclip
 	xdg-desktop-portal-gtk
 	xfce.thunar
-  xorg.libX11
-  xorg.libX11.dev
-  xorg.libxcb
-  xorg.libXft
-  xorg.libXinerama
+	xorg.libX11
+	xorg.libX11.dev
+	xorg.libxcb
+	xorg.libXft
+	xorg.libXinerama
 	xorg.xinit
-  xorg.xinput
+  	xorg.xinput
 	(lutris.override {
 	       extraPkgs = pkgs: [
 		 # List package dependencies here
