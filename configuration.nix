@@ -6,24 +6,41 @@
 
 {
   documentation.nixos.enable = false; # .desktop
-  nixpkgs.config.allowUnfree = true;
+
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      allowUnfreePredicate = (pkg: builtins.elem (builtins.parseDrvName pkg.name).name [ "steam" ]);
+      permittedInsecurePackages = [
+        "openssl-1.1.1v"
+        "python-2.7.18.6"
+      ];
+    };
+
+    overlays = [
+      (final: prev: {
+        dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
+      })
+    ];
+  };
+
   nix = {
     settings = {
       experimental-features = "nix-command flakes";
       auto-optimise-store = true;
+      substituters = ["https://nix-gaming.cachix.org"];
+      trusted-public-keys = ["nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="];
     };
   };
-  nixpkgs.config.permittedInsecurePackages = [
-    "openssl-1.1.1v"
-    "python-2.7.18.6"
-  ];
-  hardware.opengl.driSupport32Bit = true;
-  hardware.pulseaudio.support32Bit = true;
-  nixpkgs.config.allowUnfreePredicate = (pkg: builtins.elem (builtins.parseDrvName pkg.name).name [ "steam" ]);
-  nix.settings = {
-    substituters = ["https://nix-gaming.cachix.org"];
-    trusted-public-keys = ["nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="];
+
+  hardware = {
+    opengl.driSupport32Bit = true;
+    pulseaudio = {
+      enable = true;
+      support32Bit = true;
+    };
   };
+
 
   imports = [
     # Include the results of the hardware scan.
@@ -44,8 +61,17 @@
     };
   };
 
-  networking.hostName = "nixos-studio"; # Define your hostname.
-  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking = {
+    hostName = "nixos-studio"; # Define your hostname.
+    enableIPv6 = false;
+    networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+    # Open ports in the firewall.
+    # firewall.allowedTCPPorts = [ ... ];
+    # firewall.allowedUDPPorts = [ ... ];
+    # Or disable the firewall altogether.
+    firewall.enable = false;
+  };
+
 
   # Set your time zone.
   time.timeZone = "America/Chicago";
@@ -58,29 +84,44 @@
     useXkbConfig = true; # use xkbOptions in tty.
   };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-  # This installs dwm so there's no need to have it in environment.systemPackages.
-  services.xserver.windowManager.dwm.enable = true;
-  services.xserver.layout = "us";
-  services.xserver.displayManager = {
-    lightdm.enable = true;
-    autoLogin = {
+  # List services that you want to enable:
+  services = {
+    xserver = {
+      # Enable the X11 windowing system.
       enable = true;
-      user = "titus";
-    };
-    setupCommands = ''
-      ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
-    '';
+      layout = "us";
+      windowManager = {
+        # This installs dwm so there's no need to have it in environment.systemPackages.
+        dwm.enable = true;
 
-    # Uncomment this to install bspwm - removing from environment.systemPackages.
-    # services.xserver.windowManager.bspwm.enable = true;
+        # Uncomment this to install bspwm - removing from environment.systemPackages.
+        # bspwm.enable = true;
+      };
+
+      displayManager = {
+        lightdm.enable = true;
+        autoLogin = {
+          enable = true;
+          user = "titus";
+        };
+        setupCommands = ''
+          ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
+        '';
+      };
+    };
+
+    # Enable picom
+    picom.enable = true;
+
+    # Enable flatpak support. This already installs Flatpak so there's no need to have it in environment.systemPackages.
+    flatpak.enable = true;
+
+    # Enable dbus
+    dbus.enable = true;
   };
 
-  services.picom.enable = true;
   # Enable sound.
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.titus = {
@@ -184,12 +225,6 @@
     })
   ];
 
-  nixpkgs.overlays = [
-    (final: prev: {
-      dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
-    })
-  ];
-
   ## Gaming
   programs.steam = {
     # This installs Steam, so there's no need to have it in environment.systemPackages.
@@ -198,22 +233,19 @@
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
   };
 
-
-  # List services that you want to enable:
-
   # This installs QEMU, so there's no need to have it in environment.systemPackages
   virtualisation.libvirtd.enable = true;
 
-  # Enable flatpak support. This already installs Flatpak so there's no need to have it in environment.systemPackages.
-  services.flatpak.enable = true;
-  services.dbus.enable = true;
   xdg.portal = {
     enable = true;
     # wlr.enable = true;
     # gtk portal needed to make gtk apps happy. Since it's declared here, there's no need to have it in environment.systemPackages.
     extraPortals = with pkgs; [xdg-desktop-portal-gtk];
   };
+
+  # Enable Polkit
   security.polkit.enable = true;
+
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {
       description = "polkit-gnome-authentication-agent-1";
@@ -228,20 +260,15 @@
         TimeoutStopSec = 10;
       };
     };
+
+    # Set timeout to 10 seconds
     extraConfig = ''
       DefaultTimeoutStopSec=10s
     '';
   };
 
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = false;
-  networking.enableIPv6 = false;
-
-  fonts = {                                                   # This is the new syntax.
-    packages = with pkgs; [                                   # Changing it so you don't have to later on.
+  fonts = {                                           # This is the new syntax.
+    packages = with pkgs; [                           # Changing it so you don't have to later on.
       noto-fonts
       noto-fonts-cjk
       noto-fonts-emoji
@@ -262,13 +289,17 @@
     };
   };
 
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  system.copySystemConfiguration = true;
-  system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11";
+  system = {
+    # Copy the NixOS configuration file and link it from the resulting system
+    # (/run/current-system/configuration.nix). This is useful in case you
+    # accidentally delete configuration.nix.
+    copySystemConfiguration = true;
+    autoUpgrade = {
+      enable = true;
+      allowReboot = true;
+      channel = "https://channels.nixos.org/nixos-23.11";
+    };
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -276,5 +307,8 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+
+  # TL;DR: Don't change this value! It determines the version this config was
+  # created with, NOT the version, you're actually running!
   system.stateVersion = "22.11"; # Did you read the comment?
 }
