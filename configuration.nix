@@ -14,27 +14,27 @@
     };
   };
   nixpkgs.config.permittedInsecurePackages = [
-                "openssl-1.1.1v"
-		"python-2.7.18.6"
-              ];
-hardware.opengl.driSupport32Bit = true;
-hardware.pulseaudio.support32Bit = true;
-nixpkgs.config.allowUnfreePredicate = (pkg: builtins.elem (builtins.parseDrvName pkg.name).name [ "steam" ]);
-nix.settings = {
+    "openssl-1.1.1v"
+    "python-2.7.18.6"
+  ];
+  hardware.opengl.driSupport32Bit = true;
+  hardware.pulseaudio.support32Bit = true;
+  nixpkgs.config.allowUnfreePredicate = (pkg: builtins.elem (builtins.parseDrvName pkg.name).name [ "steam" ]);
+  nix.settings = {
     substituters = ["https://nix-gaming.cachix.org"];
     trusted-public-keys = ["nix-gaming.cachix.org-1:nbjlureqMbRAxR1gJ/f3hxemL9svXaZF/Ees8vCUUs4="];
   };
 
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Use the systemd-boot EFI boot loader.
-#  boot.loader.systemd-boot.enable = true;
-#  boot.loader.efi.canTouchEfiVariables = true;
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
 
- boot = {
+  boot = {
     tmp.cleanOnBoot = true;
     supportedFilesystems = [ "ntfs" ];
     loader = {
@@ -62,27 +62,26 @@ nix.settings = {
   services.xserver.enable = true;
   services.xserver.windowManager.dwm.enable = true;
   services.xserver.layout = "us";
-
   services.xserver.displayManager = {
-	lightdm.enable = true;
-  	autoLogin = {
-		enable = true;
-		user = "titus";
-	};
+    lightdm.enable = true;
+    autoLogin = {
+      enable = true;
+      user = "titus";
+    };
+    setupCommands = ''
+      ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
+    '';
   };
-services.xserver.displayManager.setupCommands = ''
-    ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
-'';
 
- services.picom.enable = true;
+  services.picom.enable = true;
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.titus = {
-     isNormalUser = true;
-     isNormalUser = true;
+    isNormalUser = true;
+    isNormalUser = true;
     description = "Titus";
     extraGroups = [    
       "flatpak"
@@ -102,106 +101,106 @@ services.xserver.displayManager.setupCommands = ''
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-   environment.systemPackages = with pkgs; [
-        vim
-	wget
-	w3m
-	dmenu
-        neofetch
-	neovim
-	autojump
-	starship
-	floorp
-	bspwm
-	cargo
-	celluloid
-	chatterino2
-  	clang-tools_9
-	davinci-resolve
-	dwm
-	dunst
-	elinks
-	eww
-	feh
-	flameshot
-	flatpak
-  	fontconfig
-  	freetype
-	gcc
-	gh
-	gimp
-	git
-	github-desktop
-	gnugrep
-	gnumake
-	gparted
-	hugo
-	kitty
-	libverto
-  	luarocks
-	lutris
-	mangohud
-	neovim
-	nfs-utils
-	ninja
-	nodejs
-	nomacs
-	openssl
-	nerdfonts
-	pavucontrol
-	picom
-	polkit_gnome
-	powershell
-	protonup-ng
-	python3Full
-	python.pkgs.pip
-	qemu
-	ripgrep
-	rofi
-	steam
-	steam-run
-	sxhkd
-	st
-	stdenv
-	synergy
-	swaycons
-	terminus-nerdfont
-	tldr
-	trash-cli
-	unzip
-	variety
-	virt-manager
-	xclip
-	xdg-desktop-portal-gtk
-	xfce.thunar
-	xorg.libX11
-	xorg.libX11.dev
-	xorg.libxcb
-	xorg.libXft
-	xorg.libXinerama
-	xorg.xinit
-  	xorg.xinput
-	(lutris.override {
-	       extraPkgs = pkgs: [
-		 # List package dependencies here
-		 wineWowPackages.stable
-		 winetricks
-	       ];
-	    })
+  environment.systemPackages = with pkgs; [
+    vim
+    wget
+    w3m
+    dmenu
+    neofetch
+    neovim
+    autojump
+    starship
+    floorp
+    bspwm
+    cargo
+    celluloid
+    chatterino2
+    clang-tools_9
+    davinci-resolve
+    dwm
+    dunst
+    elinks
+    eww
+    feh
+    flameshot
+    flatpak
+    fontconfig
+    freetype
+    gcc
+    gh
+    gimp
+    git
+    github-desktop
+    gnugrep
+    gnumake
+    gparted
+    hugo
+    kitty
+    libverto
+    luarocks
+    lutris
+    mangohud
+    neovim
+    nfs-utils
+    ninja
+    nodejs
+    nomacs
+    openssl
+    nerdfonts
+    pavucontrol
+    picom
+    polkit_gnome
+    powershell
+    protonup-ng
+    python3Full
+    python.pkgs.pip
+    qemu
+    ripgrep
+    rofi
+    steam
+    steam-run
+    sxhkd
+    st
+    stdenv
+    synergy
+    swaycons
+    terminus-nerdfont
+    tldr
+    trash-cli
+    unzip
+    variety
+    virt-manager
+    xclip
+    xdg-desktop-portal-gtk
+    xfce.thunar
+    xorg.libX11
+    xorg.libX11.dev
+    xorg.libxcb
+    xorg.libXft
+    xorg.libXinerama
+    xorg.xinit
+    xorg.xinput
+    (lutris.override {
+      extraPkgs = pkgs: [
+        # List package dependencies here
+        wineWowPackages.stable
+        winetricks
+      ];
+    })
   ];
 
   nixpkgs.overlays = [
-	(final: prev: {
-		dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
-	})
+    (final: prev: {
+      dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
+    })
   ];
 
   ## Gaming
-	programs.steam = {
-	  enable = true;
-	  remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-	  dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-	};
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+  };
 
 
   # List services that you want to enable:
@@ -216,24 +215,24 @@ services.xserver.displayManager.setupCommands = ''
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
   security.polkit.enable = true;
- systemd = {
-  user.services.polkit-gnome-authentication-agent-1 = {
-    description = "polkit-gnome-authentication-agent-1";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
+  systemd = {
+    user.services.polkit-gnome-authentication-agent-1 = {
+      description = "polkit-gnome-authentication-agent-1";
+      wantedBy = [ "graphical-session.target" ];
+      wants = [ "graphical-session.target" ];
+      after = [ "graphical-session.target" ];
+      serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
         Restart = "on-failure";
         RestartSec = 1;
         TimeoutStopSec = 10;
       };
+    };
+    extraConfig = ''
+      DefaultTimeoutStopSec=10s
+    '';
   };
-   extraConfig = ''
-     DefaultTimeoutStopSec=10s
-   '';
-};
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -242,7 +241,7 @@ services.xserver.displayManager.setupCommands = ''
   networking.firewall.enable = false;
   networking.enableIPv6 = false;
 
-fonts = {                                                  #This is depricated new sytax will
+  fonts = {                                                  #This is depricated new sytax will
     fonts = with pkgs; [                                   #be enforced in the next realease
       noto-fonts
       noto-fonts-cjk
@@ -256,12 +255,13 @@ fonts = {                                                  #This is depricated n
     fontconfig = {
       enable = true;
       defaultFonts = {
-	      monospace = [ "Meslo LG M Regular Nerd Font Complete Mono" ];
-	      serif = [ "Noto Serif" "Source Han Serif" ];
-	      sansSerif = [ "Noto Sans" "Source Han Sans" ];
+        monospace = [ "Meslo LG M Regular Nerd Font Complete Mono" ];
+        serif = [ "Noto Serif" "Source Han Serif" ];
+        sansSerif = [ "Noto Sans" "Source Han Sans" ];
       };
     };
-};
+  };
+
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
@@ -277,5 +277,4 @@ fonts = {                                                  #This is depricated n
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.11"; # Did you read the comment?
-
 }
