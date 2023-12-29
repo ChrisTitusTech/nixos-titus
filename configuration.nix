@@ -60,6 +60,7 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  # This installs dwm so there's no need to have it in environment.systemPackages.
   services.xserver.windowManager.dwm.enable = true;
   services.xserver.layout = "us";
   services.xserver.displayManager = {
@@ -71,6 +72,9 @@
     setupCommands = ''
       ${pkgs.xorg.xrandr}/bin/xrandr --output DP-1 --off --output DP-2 --off --output DP-3 --off --output HDMI-1 --mode 1920x1080 --pos 0x0 --rotate normal
     '';
+
+    # Uncomment this to install bspwm - removing from environment.systemPackages.
+    # services.xserver.windowManager.bspwm.enable = true;
   };
 
   services.picom.enable = true;
@@ -80,7 +84,6 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.titus = {
-    isNormalUser = true;
     isNormalUser = true;
     description = "Titus";
     extraGroups = [    
@@ -103,7 +106,6 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     autojump
-    bspwm
     cargo
     celluloid
     chatterino2
@@ -111,12 +113,10 @@
     davinci-resolve
     dmenu
     dunst
-    dwm
     elinks
     eww
     feh
     flameshot
-    flatpak
     floorp
     fontconfig
     freetype
@@ -136,8 +136,6 @@
     mangohud
     neofetch
     neovim
-    neovim
-    nerdfonts
     nfs-utils
     ninja
     nodejs
@@ -150,13 +148,11 @@
     protonup-ng
     python3Full
     python.pkgs.pip
-    qemu
     ripgrep
     rofi
     st
     starship
     stdenv
-    steam
     steam-run
     sxhkd
     synergy
@@ -171,7 +167,6 @@
     w3m
     wget
     xclip
-    xdg-desktop-portal-gtk
     xfce.thunar
     xorg.libX11
     xorg.libX11.dev
@@ -197,6 +192,7 @@
 
   ## Gaming
   programs.steam = {
+    # This installs Steam, so there's no need to have it in environment.systemPackages.
     enable = true;
     remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
@@ -204,15 +200,18 @@
 
 
   # List services that you want to enable:
+
+  # This installs QEMU, so there's no need to have it in environment.systemPackages
   virtualisation.libvirtd.enable = true;
-  # enable flatpak support
+
+  # Enable flatpak support. This already installs Flatpak so there's no need to have it in environment.systemPackages.
   services.flatpak.enable = true;
   services.dbus.enable = true;
   xdg.portal = {
     enable = true;
     # wlr.enable = true;
-    # gtk portal needed to make gtk apps happy
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    # gtk portal needed to make gtk apps happy. Since it's declared here, there's no need to have it in environment.systemPackages.
+    extraPortals = with pkgs; [xdg-desktop-portal-gtk];
   };
   security.polkit.enable = true;
   systemd = {
@@ -250,6 +249,7 @@
       source-han-sans
       source-han-sans-japanese
       source-han-serif-japanese
+      # Nerdfonts is declared here, so there's no need to have it in environment.systemPackages.
       (nerdfonts.override { fonts = [ "Meslo" ]; })
     ];
     fontconfig = {
