@@ -102,28 +102,22 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim
-    wget
-    w3m
-    dmenu
-    neofetch
-    neovim
     autojump
-    starship
-    floorp
     bspwm
     cargo
     celluloid
     chatterino2
     clang-tools_9
     davinci-resolve
-    dwm
+    dmenu
     dunst
+    dwm
     elinks
     eww
     feh
     flameshot
     flatpak
+    floorp
     fontconfig
     freetype
     gcc
@@ -140,13 +134,15 @@
     luarocks
     lutris
     mangohud
+    neofetch
     neovim
+    neovim
+    nerdfonts
     nfs-utils
     ninja
     nodejs
     nomacs
     openssl
-    nerdfonts
     pavucontrol
     picom
     polkit_gnome
@@ -157,11 +153,12 @@
     qemu
     ripgrep
     rofi
+    st
+    starship
+    stdenv
     steam
     steam-run
     sxhkd
-    st
-    stdenv
     synergy
     swaycons
     terminus-nerdfont
@@ -169,7 +166,10 @@
     trash-cli
     unzip
     variety
+    vim
     virt-manager
+    w3m
+    wget
     xclip
     xdg-desktop-portal-gtk
     xfce.thunar
