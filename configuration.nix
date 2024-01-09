@@ -15,7 +15,7 @@
   };
   nixpkgs.config.permittedInsecurePackages = [
                 "openssl-1.1.1v"
-		"python-2.7.18.6"
+		"python-2.7.18.7"
               ];
 hardware.opengl.driSupport32Bit = true;
 hardware.pulseaudio.support32Bit = true;
@@ -28,20 +28,59 @@ nix.settings = {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      <home-manager/nixos>
     ];
 
-  # Use the systemd-boot EFI boot loader.
-#  boot.loader.systemd-boot.enable = true;
-#  boot.loader.efi.canTouchEfiVariables = true;
-
  boot = {
+    kernelParams = [ "nohibernate" ];
     tmp.cleanOnBoot = true;
     supportedFilesystems = [ "ntfs" ];
     loader = {
-      timeout = 2;
-      systemd-boot.enable = true;
-      efi.canTouchEfiVariables = true;
+	efi.canTouchEfiVariables = true;
+#	efi.efiSysMountPoint = "/boot/efi";
+	grub = {
+		device = "nodev";
+	        efiSupport = true;
+	        enable = true;	
+		useOSProber = true;
+		timeoutStyle = "menu";
+	};
+        timeout = 300;
     };
+   # Enable BBR congestion control
+  kernelModules = [ "tcp_bbr" ];
+  kernel.sysctl."net.ipv4.tcp_congestion_control" = "bbr";
+  kernel.sysctl."net.core.default_qdisc" = "fq"; # see https://news.ycombinator.com/item?id=14814530
+
+  # Increase TCP window sizes for high-bandwidth WAN connections, assuming
+  # 10 GBit/s Internet over 200ms latency as worst case.
+  #
+  # Choice of value:
+  #     BPP         = 10000 MBit/s / 8 Bit/Byte * 0.2 s = 250 MB
+  #     Buffer size = BPP * 4 (for BBR)                 = 1 GB
+  # Explanation:
+  # * According to http://ce.sc.edu/cyberinfra/workshops/Material/NTP/Lab%208.pdf
+  #   and other sources, "Linux assumes that half of the send/receive TCP buffers
+  #   are used for internal structures", so the "administrator must configure
+  #   the buffer size equals to twice" (2x) the BPP.
+  # * The article's section 1.3 explains that with moderate to high packet loss
+  #   while using BBR congestion control, the factor to choose is 4x.
+  #
+  # Note that the `tcp` options override the `core` options unless `SO_RCVBUF`
+  # is set manually, see:
+  # * https://stackoverflow.com/questions/31546835/tcp-receiving-window-size-higher-than-net-core-rmem-max
+  # * https://bugzilla.kernel.org/show_bug.cgi?id=209327
+  # There is an unanswered question in there about what happens if the `core`
+  # option is larger than the `tcp` option; to avoid uncertainty, we set them
+  # equally.
+  kernel.sysctl."net.core.wmem_max" = 1073741824; # 1 GiB
+  kernel.sysctl."net.core.rmem_max" = 1073741824; # 1 GiB
+  kernel.sysctl."net.ipv4.tcp_rmem" = "4096 87380 1073741824"; # 1 GiB max
+  kernel.sysctl."net.ipv4.tcp_wmem" = "4096 87380 1073741824"; # 1 GiB max
+  # We do not need to adjust `net.ipv4.tcp_mem` (which limits the total
+  # system-wide amount of memory to use for TCP, counted in pages) because
+  # the kernel sets that to a high default of ~9% of system memory, see:
+  # * https://github.com/torvalds/linux/blob/a1d21081a60dfb7fddf4a38b66d9cef603b317a9/net/ipv4/tcp.c#L4116 
   };
 
   networking.hostName = "nixos-studio"; # Define your hostname.
@@ -82,7 +121,6 @@ services.xserver.displayManager.setupCommands = ''
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.titus = {
      isNormalUser = true;
-     isNormalUser = true;
     description = "Titus";
     extraGroups = [    
       "flatpak"
@@ -100,6 +138,21 @@ services.xserver.displayManager.setupCommands = ''
     ];
   };
 
+  home-manager.useGlobalPkgs = true;
+
+home-manager.users.titus = { pkgs, ... }: {
+  home.packages = [ pkgs.gitAndTools.gh ];
+  programs.gh.enable = true;
+  # make sure to use gh auth setup-git otherwise it will ask for username
+  programs.git.enable = true;
+  services.gpg-agent = {
+    enable = true;
+    defaultCacheTtl = 1800;
+    enableSshSupport = true;
+  };
+  home.stateVersion = "23.11";
+  };
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
    environment.systemPackages = with pkgs; [
@@ -109,37 +162,40 @@ services.xserver.displayManager.setupCommands = ''
 	dmenu
         neofetch
 	neovim
-	autojump
 	starship
-	floorp
-	bspwm
+	bat
+	bazecor
 	cargo
 	celluloid
 	chatterino2
   	clang-tools_9
-	davinci-resolve
-	dwm
 	dunst
+	efibootmgr
 	elinks
 	eww
 	feh
 	flameshot
 	flatpak
-  	fontconfig
+	floorp
+	fontconfig
   	freetype
+	fuse-common
 	gcc
-	gh
 	gimp
 	git
 	github-desktop
+	gnome.gnome-keyring
 	gnugrep
 	gnumake
 	gparted
+	gnugrep
+	grub2
 	hugo
 	kitty
 	libverto
   	luarocks
 	lutris
+	lxappearance
 	mangohud
 	neovim
 	nfs-utils
@@ -147,6 +203,7 @@ services.xserver.displayManager.setupCommands = ''
 	nodejs
 	nomacs
 	openssl
+	os-prober
 	nerdfonts
 	pavucontrol
 	picom
@@ -181,6 +238,7 @@ services.xserver.displayManager.setupCommands = ''
 	xorg.libXinerama
 	xorg.xinit
   	xorg.xinput
+	zoxide
 	(lutris.override {
 	       extraPkgs = pkgs: [
 		 # List package dependencies here
@@ -192,7 +250,7 @@ services.xserver.displayManager.setupCommands = ''
 
   nixpkgs.overlays = [
 	(final: prev: {
-		dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/GitHub/dwm-titus ;});
+		dwm = prev.dwm.overrideAttrs (old: { src = /home/titus/github/dwm-titus ;});
 	})
   ];
 
@@ -213,6 +271,7 @@ services.xserver.displayManager.setupCommands = ''
     enable = true;
     # wlr.enable = true;
     # gtk portal needed to make gtk apps happy
+    config.common.default = "*";
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
   security.polkit.enable = true;
@@ -230,9 +289,6 @@ services.xserver.displayManager.setupCommands = ''
         TimeoutStopSec = 10;
       };
   };
-   extraConfig = ''
-     DefaultTimeoutStopSec=10s
-   '';
 };
 
   # Open ports in the firewall.
@@ -240,10 +296,10 @@ services.xserver.displayManager.setupCommands = ''
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
-  networking.enableIPv6 = false;
+  networking.enableIPv6 = true;
 
 fonts = {                                                  #This is depricated new sytax will
-    fonts = with pkgs; [                                   #be enforced in the next realease
+    packages = with pkgs; [                                   #be enforced in the next realease
       noto-fonts
       noto-fonts-cjk
       noto-fonts-emoji
@@ -268,7 +324,7 @@ fonts = {                                                  #This is depricated n
   system.copySystemConfiguration = true;
   system.autoUpgrade.enable = true;
   system.autoUpgrade.allowReboot = true;
-  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-24.05";
+  system.autoUpgrade.channel = "https://channels.nixos.org/nixos-23.11";
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
